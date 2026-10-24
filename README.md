@@ -308,7 +308,9 @@ teste("guiHost + ScreenGui + W/H/center", function()
 end)
 
 -- ============================================================================
--- VERIFICADOR DO PAINEL — v1.0 (parte 2/2)
+-- VERIFICADOR DO PAINEL — v1.0 (parte 2a)
+-- Testes 12 a 20: widgets, keyScreen, mainPanel, gaveta, modal, log,
+-- configurações, draggable/resizable, funções de chat.
 -- ============================================================================
 
 -- 12. botao, rotulo, campo, cartao
@@ -801,18 +803,14 @@ teste("recentralizar, say, ultimoBloco, dividirTentativas", function()
     return "4 funções ok"
 end)
 
--- 21. lerMapa (versão real)
+-- ============================================================================
+-- VERIFICADOR DO PAINEL — v1.0 (parte 2b)
+-- Testes 21 a 29: lerMapa, capacidades, lab, oficina, diretivas, relatório,
+-- boot/enter, conexões finais. Fecha com o painel de resultado.
+-- ============================================================================
+
+-- 21. lerMapa (retrato do jogo)
 teste("lerMapa (retrato do jogo)", function()
-    local function mk(class, props, parent)
-        local inst = Instance.new(class)
-        for k, v in pairs(props or {}) do inst[k] = v end
-        if parent then inst.Parent = parent end
-        return inst
-    end
-    local function tr(s) return (s:match("^%s*(.-)%s*$")) end
-    local MODOS = { medio = { nome = "MÉDIO", chars = 14000, profundidade = 3, fontes = 12,
-        fonteChars = 1800, nos = 2200 } }
-    local S = { modo = "medio" }
     local function varrer(raiz, cfg, visitar)
         local opcoes = cfg or {}
         local pilha = { { inst = raiz, nivel = 0 } }
@@ -891,7 +889,7 @@ teste("lerMapa (retrato do jogo)", function()
     return string.format("retrato gerado: %d chars", #resultado)
 end)
 
--- 22. capacidades (rodar CHECKS)
+-- 22. capacidades (CHECKS + tentar)
 teste("capacidades (CHECKS + tentar)", function()
     local function tentar(fn)
         local ok, a = pcall(fn)
@@ -923,22 +921,16 @@ teste("capacidades (CHECKS + tentar)", function()
             return "ok"
         end },
     }
-    local oks, falhas = 0, 0
+    local oks, falhas2 = 0, 0
     for _, c in ipairs(CHECKS) do
-        local ok, d, e = tentar(c[2])
-        if ok then oks = oks + 1 else falhas = falhas + 1 end
+        local ok = tentar(c[2])
+        if ok then oks = oks + 1 else falhas2 = falhas2 + 1 end
     end
-    return string.format("%d ok, %d fail", oks, falhas)
+    return string.format("%d ok, %d fail", oks, falhas2)
 end)
 
 -- 23. lab (rodarLab)
 teste("rodarLab (sandbox)", function()
-    local function mk(class, props, parent)
-        local inst = Instance.new(class)
-        for k, v in pairs(props or {}) do inst[k] = v end
-        if parent then inst.Parent = parent end
-        return inst
-    end
     local LAB = { root = nil, saida = {} }
     local function labRoot()
         if not LAB.root then
@@ -950,7 +942,6 @@ teste("rodarLab (sandbox)", function()
         return LAB.root
     end
     local function montarEnv()
-        local raiz = labRoot()
         return { print = function(...)
             local partes = {}
             for i = 1, select("#", ...) do partes[i] = tostring(select(i, ...)) end
@@ -992,7 +983,7 @@ teste("rodarLab (sandbox)", function()
     return "lab ok: " .. r.saida[1]
 end)
 
--- 24. oficina (promptOficina + extrairFerramenta + testarFerramenta)
+-- 24. oficina (extrair ferramenta válida)
 teste("oficina (extrair ferramenta válida)", function()
     local function extrairFerramenta(ret)
         if type(ret) ~= "table" then return nil end
@@ -1012,7 +1003,7 @@ teste("oficina (extrair ferramenta válida)", function()
     return "ferramenta válida extraída"
 end)
 
--- 25. diretivas (extrair + executar)
+-- 25. diretivas (@@LER @@NOME @@FERRAMENTA)
 teste("diretivas @@LER @@NOME @@FERRAMENTA", function()
     local function tr(s) return (s:match("^%s*(.-)%s*$")) end
     local S = { nomePedido = nil }
@@ -1051,7 +1042,7 @@ teste("diretivas @@LER @@NOME @@FERRAMENTA", function()
     return "3 diretivas executadas"
 end)
 
--- 26. INSTRUCAO_AUTO + perguntarRelatorio (só verificação de existência)
+-- 26. INSTRUCAO_AUTO + perguntarRelatorio
 teste("INSTRUCAO_AUTO + perguntarRelatorio", function()
     local INSTRUCAO_AUTO = table.concat({
         "MODO AUTOMÁTICO — trabalhe sozinho:",
@@ -1068,7 +1059,7 @@ teste("INSTRUCAO_AUTO + perguntarRelatorio", function()
     return "INSTRUCAO_AUTO " .. #INSTRUCAO_AUTO .. " chars"
 end)
 
--- 27. buildReport + saveReport (só verificação de existência)
+-- 27. buildReport + saveReport
 teste("buildReport + saveReport + salvarArtefato", function()
     local function contextoFerramentas() return "nenhuma ferramenta" end
     local function resumoPendencias() return "nenhuma" end
@@ -1090,7 +1081,7 @@ teste("buildReport + saveReport + salvarArtefato", function()
     return "relatório ok: " .. #texto .. " chars"
 end)
 
--- 28. boot / enter / usarModo
+-- 28. boot + enter + usarModo
 teste("boot + enter + usarModo", function()
     local S = { booted = false, modo = "medio", modeloEditado = false }
     local MODOS = { medio = { modelo = "openai/gpt-4o-mini" }, pesado = { modelo = "openai/gpt-4o" } }
